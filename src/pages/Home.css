@@ -1,0 +1,55 @@
+.home-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.hero-section {
+  background: linear-gradient(rgba(26, 62, 114, 0.8), rgba(26, 62, 114, 0.8)), 
+              url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: 10px;
+  padding: 4rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.about-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.about-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.facility-card {
+  transition: transform 0.3s ease;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.facility-card:hover {
+  transform: translateY(-5px);
+}
+
+.facility-icon {
+  font-size: 2.5rem;
+}
+
+.schedule-list li {
+  padding: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 2.2rem;
+  }
+}
