@@ -11,6 +11,9 @@ import Salas from './pages/Salas';
 import Reservas from './pages/Reservas';
 import AdminSalas from './pages/Admin/SalasAdmin';
 import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import Register from './pages/Register'; // Nuevo import
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -38,14 +41,28 @@ function App() {
           {/* Ruta principal */}
           <Route path="/" element={<Home />} />
           
-          {/* Ruta para listado de salas */}
-          <Route path="/salas" element={<Salas />} />
+          {/* Rutas públicas */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} /> {/* Nueva ruta */}
           
-          {/* Ruta para reservas con parámetro salaId */}
-          <Route path="/reservas/:salaId" element={<Reservas />} />
+          {/* Rutas protegidas */}
+          <Route path="/salas" element={
+            <PrivateRoute>
+              <Salas />
+            </PrivateRoute>
+          } />
           
-          {/* Ruta de administración */}
-          <Route path="/admin/salas" element={<AdminSalas />} />
+          <Route path="/reservas/:salaId" element={
+            <PrivateRoute>
+              <Reservas />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/admin/salas" element={
+            <PrivateRoute>
+              <AdminSalas />
+            </PrivateRoute>
+          } />
           
           {/* Ruta de fallback para páginas no encontradas */}
           <Route path="*" element={<NotFound />} />

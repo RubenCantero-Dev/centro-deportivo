@@ -4,6 +4,7 @@ import App from './App'
 import './styles/index.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'react-toastify/dist/ReactToastify.css'
+import { AuthProvider } from './context/AuthContext' // Importa el AuthProvider
 
 // Importar fuentes de Google
 const link = document.createElement('link')
@@ -13,6 +14,8 @@ document.head.appendChild(link)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider> {/* Envuelve tu App con AuthProvider */}
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 )
