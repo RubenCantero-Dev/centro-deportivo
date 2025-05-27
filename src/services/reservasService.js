@@ -8,43 +8,29 @@ import {
   where, 
   Timestamp,
   updateDoc,
-  onSnapshot,
-  writeBatch
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 
 /**
- * Crea una nueva reserva y actualiza el estado de la sala
+ * Crea una nueva reserva
  * @param {Object} reserva - Datos de la reserva
- * @param {string} reserva.salaId - ID de la sala a reservar
- * @param {string} reserva.nombre - Nombre del reservante
- * @param {string} reserva.fecha - Fecha de reserva (formato YYYY-MM-DD)
- * @param {string} reserva.horaInicio - Hora de inicio (HH:MM)
- * @param {string} reserva.horaFin - Hora de fin (HH:MM)
  * @returns {Promise<string>} ID de la reserva creada
  */
 export const crearReserva = async (reserva) => {
-  const batch = writeBatch(db);
-  
-  // 1. Crear documento de reserva
-  const reservaRef = doc(collection(db, 'reservas'));
-  batch.set(reservaRef, {
-    ...reserva,
-    fecha: Timestamp.fromDate(new Date(reserva.fecha)),
-    estado: 'activa',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
-  });
-
-  // 2. Actualizar estado de la sala
-  const salaRef = doc(db, 'salas', reserva.salaId);
-  batch.update(salaRef, {
-    disponibilidad: false,
-    updatedAt: Timestamp.now()
-  });
-
-  await batch.commit();
-  return reservaRef.id;
+  try {
+    const reservaRef = await addDoc(collection(db, 'reservas'), {
+      ...reserva,
+      fecha: Timestamp.fromDate(new Date(reserva.fecha)),
+      estado: 'activa',
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
+    });
+    return reservaRef.id;
+  } catch (error) {
+    console.error("Error en crearReserva:", error);
+    throw error;
+  }
 };
 
 /**
@@ -67,35 +53,17 @@ export const getReservasPorSala = async (salaId) => {
 };
 
 /**
- * Finaliza una reserva y actualiza el estado de la sala
+ * Finaliza una reserva
  * @param {string} reservaId - ID de la reserva a finalizar
  * @returns {Promise<void>}
  */
 export const finalizarReserva = async (reservaId) => {
   try {
     const reservaRef = doc(db, 'reservas', reservaId);
-    const reservaDoc = await getDoc(reservaRef);
-    
-    if (!reservaDoc.exists()) {
-      throw new Error('Reserva no encontrada');
-    }
-
-    const batch = writeBatch(db);
-    
-    // 1. Actualizar estado de la reserva
-    batch.update(reservaRef, {
+    await updateDoc(reservaRef, {
       estado: 'finalizada',
       updatedAt: Timestamp.now()
     });
-
-    // 2. Actualizar disponibilidad de la sala
-    const salaRef = doc(db, 'salas', reservaDoc.data().salaId);
-    batch.update(salaRef, {
-      disponibilidad: true,
-      updatedAt: Timestamp.now()
-    });
-
-    await batch.commit();
   } catch (error) {
     console.error("Error en finalizarReserva:", error);
     throw error;

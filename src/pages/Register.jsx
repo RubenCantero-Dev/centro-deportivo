@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -15,7 +14,7 @@ function Register() {
     setError("");
     try {
       await register(email, password);
-      navigate("/"); // Redirige al inicio
+      navigate("/");
     } catch (err) {
       setError("No se pudo registrar el usuario.");
     }

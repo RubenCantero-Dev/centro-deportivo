@@ -39,7 +39,20 @@ export default function Reservas() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [reservaConfirmada, setReservaConfirmada] = useState(null);
 
-  // Cargar datos de la sala y suscribirse a reservas
+  const estaDisponible = (sala, reservas) => {
+    const ahora = new Date();
+    return !reservas.some(reserva => {
+      const fechaReserva = new Date(reserva.fecha);
+      if (fechaReserva.toDateString() !== ahora.toDateString()) return false;
+
+      const [hIni, mIni] = reserva.horaInicio.split(':').map(Number);
+      const [hFin, mFin] = reserva.horaFin.split(':').map(Number);
+      const inicio = new Date(fechaReserva.setHours(hIni, mIni, 0, 0));
+      const fin = new Date(fechaReserva.setHours(hFin, mFin, 0, 0));
+      return ahora >= inicio && ahora < fin;
+    });
+  };
+
   useEffect(() => {
     let unsubscribeReservas;
 
@@ -47,7 +60,6 @@ export default function Reservas() {
       try {
         setLoading(true);
         
-        // 1. Cargar datos de la sala
         const salasData = await getSalas();
         const salaData = salasData.find(s => s.id === salaId);
         
@@ -59,15 +71,10 @@ export default function Reservas() {
         
         setSala(salaData);
 
-        // 2. Suscribirse a reservas en tiempo real
         unsubscribeReservas = subscribeReservasPorSala(
           salaId,
           (reservasData) => {
             setReservas(reservasData);
-            setLoading(false);
-          },
-          (error) => {
-            toast.error('Error en conexión: ' + error.message);
             setLoading(false);
           }
         );
@@ -90,7 +97,6 @@ export default function Reservas() {
     setValidating(true);
     
     try {
-      // Validación básica
       if (!form.nombre || !form.fecha) {
         toast.error('Todos los campos son requeridos');
         return;
@@ -101,7 +107,6 @@ export default function Reservas() {
         return;
       }
 
-      // Verificar disponibilidad
       const disponible = await verificarDisponibilidad(
         salaId,
         form.fecha,
@@ -114,7 +119,6 @@ export default function Reservas() {
         return;
       }
 
-      // Mostrar confirmación
       setReservaConfirmada({
         ...form,
         salaNombre: sala?.nombre,
@@ -134,7 +138,6 @@ export default function Reservas() {
       await crearReserva(reservaConfirmada);
       toast.success('Reserva creada exitosamente!');
       setShowConfirmation(false);
-      // No necesitamos actualizar reservas manualmente, la suscripción lo hace
     } catch (err) {
       toast.error('Error al crear reserva: ' + err.message);
     }
@@ -145,7 +148,6 @@ export default function Reservas() {
       try {
         await finalizarReserva(reservaId);
         toast.success('Reserva finalizada correctamente');
-        // No necesitamos actualizar manualmente, la suscripción lo hace
       } catch (err) {
         toast.error('Error al finalizar reserva: ' + err.message);
       }
@@ -167,14 +169,13 @@ export default function Reservas() {
     <Container className="mt-4">
       <ToastContainer position="top-right" autoClose={5000} />
       
-      {/* Encabezado con info de la sala */}
       {sala && (
         <Card className="mb-4 shadow-sm">
           <Card.Body>
             <Card.Title className="text-primary">
               {sala.nombre}
-              <Badge bg={sala.disponibilidad ? 'success' : 'danger'} className="ms-2">
-                {sala.disponibilidad ? 'Disponible' : 'No disponible'}
+              <Badge bg={estaDisponible(sala, reservas) ? 'success' : 'danger'} className="ms-2">
+                {estaDisponible(sala, reservas) ? 'Disponible ahora' : 'Ocupada ahora'}
               </Badge>
             </Card.Title>
             <Card.Text>{sala.descripcion}</Card.Text>
@@ -187,7 +188,6 @@ export default function Reservas() {
       )}
 
       <Row>
-        {/* Formulario de reserva */}
         <Col lg={6}>
           <Card className="mb-4">
             <Card.Body>
@@ -260,7 +260,6 @@ export default function Reservas() {
           </Card>
         </Col>
 
-        {/* Listado de reservas activas */}
         <Col lg={6}>
           <Card>
             <Card.Body>
@@ -304,7 +303,6 @@ export default function Reservas() {
         </Col>
       </Row>
 
-      {/* Modal de Confirmación */}
       <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar Reserva</Modal.Title>
